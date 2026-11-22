@@ -5,7 +5,7 @@
         <field name="model">sbs.expiry.notify.config</field>
         <field name="arch" type="xml">
             <list editable="bottom">
-                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="company_id" options="{'no_create': True}"/>
                 <field name="days_before"/>
                 <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
             </list>
@@ -19,7 +19,7 @@
             <form>
                 <sheet>
                     <group>
-                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="company_id" options="{'no_create': True}"/>
                         <field name="days_before"/>
                         <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
                     </group>
@@ -37,9 +37,10 @@
                 Choose who is told before a lot expires.
             </p>
             <p>
-                Set the company, how many days before the lot expiry date, and the people to notify.
-                A daily check uses the product company, then notifies those people once for each lot still in stock.
-                A product with no company follows the company of the stock location. 1 day means the day before expiry.
+                Set the company or branch, how many days before the lot expiry date, and the people to notify.
+                Add one row for each company and one row for each branch. A branch is a company with a parent.
+                A daily check looks at stock in that company or branch only, and notifies those people once for each lot still in stock.
+                A branch uses products and lots of its parent company. 1 day means the day before expiry.
             </p>
         </field>
     </record>

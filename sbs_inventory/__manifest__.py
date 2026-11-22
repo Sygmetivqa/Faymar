@@ -7,9 +7,9 @@
     'description': """
 SBS Inventory
 =============
-* Expiry notification is set per company: how many days before the lot expiry date, and who is notified
-* A daily check notifies those people when a lot of that company's product is about to expire
-* A product with no company follows the company of the stock location
+* Expiry notification is set per company and per branch: how many days before the lot expiry date, and who is notified
+* A daily check notifies those people when stock in that company or branch is about to expire
+* A branch uses products and lots of its parent company, and only counts stock in its own locations
     """,
     'author': 'Sygmetiv Business Solutions',
     'website': 'https://sygmetiv.qa',

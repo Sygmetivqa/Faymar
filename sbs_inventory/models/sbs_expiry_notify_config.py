@@ -15,6 +15,10 @@ class SbsExpiryNotifyConfig(models.Model):
     company_id = fields.Many2one(
         'res.company', string='Company', required=True, index=True,
         default=lambda self: self.env.company, ondelete='cascade',
+        help='Company or branch this notice applies to. A branch is a company with a parent. '
+             'Each company and each branch has its own days and people. '
+             'Only stock in that company or branch is checked. '
+             'A branch still uses products and lots owned by its parent company.',
     )
     days_before = fields.Integer(
         string='Notify Days Before Expiry', required=True, default=1,
@@ -60,7 +64,7 @@ class SbsExpiryNotifyConfig(models.Model):
 
     @api.model
     def _cron_notify_product_expiry(self):
-        """Notify the people set on a company when a lot of that company's product reaches the configured day before expiry."""
+        """Notify the people set on a company or branch when its stock reaches the configured day before expiry."""
         configs = self.sudo().search([])
         if not configs:
             return
@@ -72,16 +76,16 @@ class SbsExpiryNotifyConfig(models.Model):
             if not users or config.days_before < 0:
                 continue
             company = config.company_id
+            # A branch stocks products and lots of itself and of its parent companies.
+            visible_company_ids = self._sbs_visible_company_ids(company)
             tz_name = self._sbs_tz_name(company)
             today = fields.Date.context_today(self.with_context(tz=tz_name))
             horizon = today + timedelta(days=config.days_before)
-            # The product company decides which configuration applies.
-            # A product with no company is shared, so the stock location company decides.
             lots = Lot.search([
                 ('expiration_date', '>=', self._sbs_utc_bound(tz_name, today, end=False)),
                 ('expiration_date', '<=', self._sbs_utc_bound(tz_name, horizon, end=True)),
-                ('product_id.company_id', 'in', [company.id, False]),
-                ('company_id', 'in', [company.id, False]),
+                ('product_id.company_id', 'in', visible_company_ids),
+                ('company_id', 'in', visible_company_ids),
             ])
             if not lots:
                 continue
@@ -101,7 +105,7 @@ class SbsExpiryNotifyConfig(models.Model):
             }
             lots = lots.filtered(
                 lambda lot: lot.id in qty_by_lot
-                and (not lot.product_id.company_id or lot.product_id.company_id == company)
+                and (not lot.product_id.company_id or lot.product_id.company_id.id in visible_company_ids)
             )
             if not lots:
                 continue
@@ -124,7 +128,8 @@ class SbsExpiryNotifyConfig(models.Model):
                 if not pending:
                     continue
                 note = _(
-                    '%(product)s, lot %(lot)s, expires on %(date)s. %(days)s day(s) remaining. On hand: %(qty)s %(uom)s.',
+                    '%(company)s: %(product)s, lot %(lot)s, expires on %(date)s. %(days)s day(s) remaining. On hand: %(qty)s %(uom)s.',
+                    company=company.display_name,
                     product=lot.product_id.display_name,
                     lot=lot.name,
                     date=format_date(self.env, expiry_day),
@@ -170,6 +175,19 @@ class SbsExpiryNotifyConfig(models.Model):
                     ),
                     subtype_xmlid='mail.mt_note',
                 )
+
+    @api.model
+    def _sbs_visible_company_ids(self, company):
+        """This company or branch, its parent companies, and shared records.
+
+        Stock locations stay on the configured company itself. Products and lots
+        may belong to a parent company and still sit in a branch warehouse.
+        """
+        if company.parent_path:
+            company_ids = [int(part) for part in company.parent_path.split('/') if part]
+        else:
+            company_ids = company.ids
+        return company_ids + [False]
 
     @api.model
     def _sbs_tz_name(self, company):
