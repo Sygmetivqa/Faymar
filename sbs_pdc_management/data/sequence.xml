@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="seq_customer_pdc_payment" model="ir.sequence">
+        <field name="name">Customer PDC Payment</field>
+        <field name="code">customer.pdc.payment</field>
+        <field name="prefix">CUST.PDC/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_supplier_pdc_payment" model="ir.sequence">
+        <field name="name">Supplier PDC Payment</field>
+        <field name="code">supplier.pdc.payment</field>
+        <field name="prefix">CHEQUE/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

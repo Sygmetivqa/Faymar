@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_inherit_pdc_payment_button" model="ir.ui.view">
+        <field name="name">account.move.form.pdc.entries</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="pdc_id" invisible="1"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_see_pdc_entry"
+                        type="object"
+                        string="PDC Entries"
+                        class="oe_stat_button"
+                        icon="fa-book"
+                        invisible="not pdc_id
+                            or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt')"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

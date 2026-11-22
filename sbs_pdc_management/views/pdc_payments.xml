@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_pdc_payment_tree" model="ir.ui.view">
+        <field name="name">view.pdc.payment.tree</field>
+        <field name="model">pdc.payment</field>
+        <field name="arch" type="xml">
+            <list string="PDC Payments" default_order="id desc">
+                <field name="date" string="Prepared Date" width="130"/>
+                <field name="cheque_reference" string="Cheque Number"/>
+                <field name="partner_id" string="Party Name"/>
+                <field name="due_date" string="Cheque Date" width="130"/>
+                <field name="amount" string="Amount"/>
+                <field name="submit_date" optional="show"/>
+                <field name="issued_date" optional="show"/>
+                <field name="issue_journal_id" optional="show"/>
+                <field name="status"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pdc_payment_form" model="ir.ui.view">
+        <field name="name">pdc.payment.form</field>
+        <field name="model">pdc.payment</field>
+        <field name="arch" type="xml">
+            <form string="PDC Payment">
+                <header>
+                    <field name="move_id" invisible="1"/>
+                    <field name="from_payment_register" invisible="1"/>
+                    <button name="action_pdc_submit"
+                            type="object"
+                            string="Submit"
+                            invisible="status != 'draft'"
+                            class="oe_highlight"/>
+                    <button name="action_issue"
+                            type="object"
+                            string="Issue"
+                            invisible="status != 'submitted'"
+                            class="oe_highlight"/>
+                    <field name="status" widget="statusbar"
+                            statusbar_visible="draft,submitted,issued"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="original_move_id" invisible="1"/>
+                        <button name="action_see_journal_entry"
+                                type="object"
+                                string="Journal Entries"
+                                class="oe_stat_button"
+                                icon="fa-book"
+                                invisible="not move_id and not original_move_id"/>
+                    </div>
+                    <group>
+                        <!-- Left column -->
+                        <group string="Cheque Details">
+                            <field name="name" string="PDC Payment Number" readonly="1"/>
+                            <field name="payment_type" invisible="1"/>
+                            <field name="partner_type" invisible="1"/>
+                            <field name="partner_id"
+                                      required="1"
+                                      context="{'show_company_partner': True}"
+                                      options="{'no_create_edit': True, 'no_create': True, 'no_open': True}"
+                                      readonly="from_payment_register or status != 'draft'"/>
+                            <field name="amount"
+                                      required="1"
+                                      readonly="from_payment_register or status != 'draft'"/>
+                            <field name="date"
+                                      string="Prepared Date"
+                                      required="1"
+                                      readonly="from_payment_register or status != 'draft'"/>
+                            <field name="due_date"
+                                      required="1"
+                                      readonly="from_payment_register or status != 'draft'"/>
+                            <field name="cheque_reference"
+                                      required="1"
+                                      readonly="from_payment_register or status != 'draft'"/>
+                            <field name="bank_id"
+                                      string="Cheque Bank"
+                                      required="1"
+                                      readonly="from_payment_register or status != 'draft'"/>
+                        </group>
+                        <!-- Right column -->
+                        <group string="Journals &amp; Dates">
+                            <field name="journal_id"
+                                      string="PDC Journal"
+                                      domain="[('company_id', '=', company_id), ('type', 'in', ['bank', 'cash']), ('is_pdc', '=', True)]"
+                                      options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                                      required="1"
+                                      readonly="from_payment_register or status != 'draft'"
+                                      help="On Submit: Account Receivable/Payable vs PDC Receivable/Payable."/>
+                            <field name="submit_date"
+                                      readonly="status != 'draft'"
+                                      required="status == 'draft'"/>
+                            <field name="issued_date"
+                                      readonly="status != 'submitted'"
+                                      required="status == 'submitted'"/>
+                            <field name="issue_journal_id"
+                                      string="Issue Journal"
+                                      domain="[('company_id', '=', company_id), ('type', 'in', ['bank', 'cash']), ('is_pdc', '=', False)]"
+                                      options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                                      readonly="status != 'submitted'"
+                                      required="status == 'submitted'"
+                                      help="On Issue: Bank account vs PDC Receivable (customer) or PDC Payable (vendor)."/>
+                            <field name="invoice_ids"
+                                      widget="many2many_tags"
+                                      readonly="1"
+                                      options="{'no_create': True}"/>
+                            <field name="description"
+                                      readonly="from_payment_register or status != 'draft'"/>
+                            <field name="company_id"
+                                      required="1"
+                                      readonly="1"
+                                      options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_pdc_payment_search" model="ir.ui.view">
+        <field name="name">pdc.payment.search</field>
+        <field name="model">pdc.payment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="due_date" string="Cheque Date"/>
+                <field name="partner_id" string="Partner"/>
+                <field name="amount" string="Amount"/>
+                <field name="cheque_reference" string="Cheque Number"/>
+
+                <filter string="Draft" name="filter_draft" domain="[('status', '=', 'draft')]"/>
+                <filter string="Submitted" name="filter_submitted" domain="[('status', '=', 'submitted')]"/>
+                <filter string="Issued" name="filter_issued" domain="[('status', '=', 'issued')]"/>
+                <separator/>
+                <filter string="Today Cheque Date"
+                        name="cheque_today"
+                        domain="[('due_date', '=', context_today())]"/>
+                <filter string="Tomorrow Cheque Date"
+                        name="cheque_tomorrow"
+                        domain="[('due_date', '=', (context_today() + relativedelta(days=1)))]"/>
+                <filter string="Previous Cheque Date"
+                        name="cheque_previous"
+                        domain="[('due_date', '&lt;=', (context_today() + relativedelta(days=-1)))]"/>
+                <group name="Group By">
+                    <filter string="Cheque Date" name="group_by_due_date" context="{'group_by': 'due_date'}"/>
+                    <filter string="Partner" name="group_by_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Status" name="group_by_status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_view_supplier_pdc_payment_tree" model="ir.actions.act_window">
+        <field name="name">Vendor PDC</field>
+        <field name="res_model">pdc.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'pdc_type': 'payable'}</field>
+        <field name="domain">[('partner_type', '=', 'supplier')]</field>
+    </record>
+
+    <record id="action_view_customer_pdc_payment_tree" model="ir.actions.act_window">
+        <field name="name">Customer PDC</field>
+        <field name="res_model">pdc.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'pdc_type': 'receive'}</field>
+        <field name="domain">[('partner_type', '=', 'customer')]</field>
+    </record>
+
+    <menuitem id="menu_customer_pdc_payments"
+              name="Customer PDC"
+              parent="account.menu_finance_receivables"
+              action="action_view_customer_pdc_payment_tree"
+              sequence="51"/>
+
+    <menuitem id="menu_supplier_pdc_payments"
+              name="Vendor PDC"
+              parent="account.menu_finance_payables"
+              action="action_view_supplier_pdc_payment_tree"
+              sequence="51"/>
+
+</odoo>
