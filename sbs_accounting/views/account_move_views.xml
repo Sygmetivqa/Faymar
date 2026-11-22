@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_sbs_receivable_amount" model="ir.ui.view">
+        <field name="name">account.move.form.sbs.receivable.amount</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@id='header_left_group']/div[hasclass('o_col')]" position="after">
+                <field name="sbs_receivable_amount" readonly="1"
+                       invisible="move_type != 'out_invoice'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

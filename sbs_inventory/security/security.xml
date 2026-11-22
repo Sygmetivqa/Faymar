@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sbs_expiry_notify_config_company_rule" model="ir.rule">
+        <field name="name">Expiry notify configuration: multi-company</field>
+        <field name="model_id" ref="model_sbs_expiry_notify_config"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="sbs_lot_expiry_notify_log_company_rule" model="ir.rule">
+        <field name="name">Expiry notification log: multi-company</field>
+        <field name="model_id" ref="model_sbs_lot_expiry_notify_log"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

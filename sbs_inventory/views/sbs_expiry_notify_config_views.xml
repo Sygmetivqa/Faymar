@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sbs_expiry_notify_config_list" model="ir.ui.view">
+        <field name="name">sbs.expiry.notify.config.list</field>
+        <field name="model">sbs.expiry.notify.config</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="days_before"/>
+                <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_sbs_expiry_notify_config_form" model="ir.ui.view">
+        <field name="name">sbs.expiry.notify.config.form</field>
+        <field name="model">sbs.expiry.notify.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="days_before"/>
+                        <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sbs_expiry_notify_config" model="ir.actions.act_window">
+        <field name="name">Expiry Notify Configuration</field>
+        <field name="res_model">sbs.expiry.notify.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Choose who is told before a lot expires.
+            </p>
+            <p>
+                Set the company, how many days before the lot expiry date, and the people to notify.
+                A daily check uses the product company, then notifies those people once for each lot still in stock.
+                A product with no company follows the company of the stock location. 1 day means the day before expiry.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_sbs_expiry_notify_config"
+              name="Expiry Notify Configuration"
+              parent="stock.menu_stock_config_settings"
+              action="action_sbs_expiry_notify_config"
+              groups="stock.group_stock_manager"
+              sequence="60"/>
+</odoo>
