@@ -1,3 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_sbs_expiry_notify_config,sbs.expiry.notify.config,model_sbs_expiry_notify_config,stock.group_stock_manager,1,1,1,1
 access_sbs_lot_expiry_notify_log,sbs.lot.expiry.notify.log,model_sbs_lot_expiry_notify_log,stock.group_stock_manager,1,0,0,0
+access_product_brand_user,product.brand.user,model_product_brand,base.group_user,1,0,0,0
+access_product_brand_stock_user,product.brand.stock.user,model_product_brand,stock.group_stock_user,1,1,1,0
+access_product_brand_manager,product.brand.manager,model_product_brand,stock.group_stock_manager,1,1,1,1
